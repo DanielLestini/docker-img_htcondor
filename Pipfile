@@ -5,9 +5,9 @@ name = "pypi"
 
 [packages]
 kazoo = "*"
-requests = "*"
+requests = ">=2.20.0"
 
 [dev-packages]
 
 [requires]
-python_version = "3.6"
+python_version = "3"
