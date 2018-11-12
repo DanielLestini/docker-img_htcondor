@@ -57,6 +57,8 @@ then
     condor_master -f
 elif [ "$1" == "wn" ];
 then
+    export HIGHPORT=0
+    export LOWPORT=0
     echo "==> Check CONDOR_HOST"
     if [ "$CONDOR_HOST" == "ZOOKEEPER" ];
     then
@@ -66,6 +68,12 @@ then
         export CCB_ADDRESS="$CONDOR_HOST"
     else
         echo "==> CONDOR_HOST with ENV"
+    fi
+    if [ -z "$CCB_ADDRESS" ]
+    then
+        export CCB_ADDRESS="$CONDOR_HOST"
+    else
+        echo "==> CCB_ADDR with ENV"
     fi
     echo "==> Compile configuration file for worker node with env vars"
     export CONDOR_DAEMON_LIST="MASTER, STARTD"
