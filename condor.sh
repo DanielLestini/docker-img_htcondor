@@ -14,6 +14,34 @@ FLOCK_NEGOTIATOR_HOSTS = \$\(FLOCK_TO\)
 EOF
 `
 
+#yum -y install ca-policy-egi-core
+#yum -y install ca-policy-lcg
+#/usr/sbin/fetch-crl -q
+
+wget -O /etc/yum.repos.d/ca_CMS-TTS-CA.repo https://ci.cloud.cnaf.infn.it/view/dodas/job/ca_DODAS-TTS/job/master/lastSuccessfulBuild/artifact/ca_DODAS-TTS.repo
+yum -y install ca_DODAS-TTS
+
+/usr/sbin/fetch-crl -q
+
+resp=0
+until [  $resp -eq 200 ]; do
+    resp=$(curl -s \
+        -w%{http_code} \
+        $PROXY_CACHE/cgi-bin/get_proxy -o /root/gwms_proxy)
+done
+#############
+
+chmod 600 /root/gwms_proxy
+
+export X509_USER_PROXY=/root/gwms_proxy
+export X509_CERT_DIR=/etc/grid-security/certificates
+
+
+cat > /etc/condor/condormapfile << EOF
+GSI (.*) GSS_ASSIST_GRIDMAP
+GSI (.*) anonymous
+EOF
+
 if [ "$1" == "master" ];
 then
     echo "==> Check CONDOR_HOST"
@@ -29,16 +57,38 @@ then
         echo "==> CONDOR_HOST with ENV"
     fi
     echo "==> Compile configuration file for master node with env vars"
-    export NETWORK_INTERFACE=$(hostname -i)
+    if [ -z "$NETWORK_INTERFACE" ];
+    then
+        export NETWORK_INTERFACE=$(hostname -i)
+    else
+        echo "==> NETWORK_INTERFACE with ENV"
+    fi
+    if [ -z "$HIGHPORT" ];
+    then
+        export HIGHPORT=1084
+    else
+        echo "==> HIGHPORT with ENV"
+    fi
+    if [ -z "$LOWPORT" ];
+    then
+        export LOWPORT=1024
+    else
+        echo "==> LOWPORT with ENV"
+    fi
+
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     export CONDOR_DAEMON_LIST="COLLECTOR, MASTER, NEGOTIATOR"
     export FLOCK_FROM="FLOCK_FROM = 192.168.0.*"
     export HOST_ALLOW_FLOCK="$CLUSTER_ALLOW_FLOCK"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_master.template > /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
 elif [ "$1" == "wn" ];
 then
+    export HIGHPORT=0
+    export LOWPORT=0
     echo "==> Check CONDOR_HOST"
     if [ "$CONDOR_HOST" == "ZOOKEEPER" ];
     then
@@ -49,10 +99,18 @@ then
     else
         echo "==> CONDOR_HOST with ENV"
     fi
+    if [ -z "$CCB_ADDRESS" ]
+    then
+        export CCB_ADDRESS="$CONDOR_HOST"
+    else
+        echo "==> CCB_ADDR with ENV"
+    fi
     echo "==> Compile configuration file for worker node with env vars"
     export CONDOR_DAEMON_LIST="MASTER, STARTD"
     export CCB_ADDRESS_STRING="CCB_ADDRESS = $CCB_ADDRESS"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
     echo "==> Start service"
@@ -79,17 +137,48 @@ then
         echo "==> CONDOR_HOST with ENV"
     fi
     echo "==> Compile configuration file for sheduler node with env vars"
-    export NETWORK_INTERFACE=$(hostname -i)
+    if [ -z "$NETWORK_INTERFACE" ];
+    then
+        export NETWORK_INTERFACE=$(hostname -i)
+    else
+        echo "==> NETWORK_INTERFACE with ENV"
+    fi
+    if [ -z "$HIGHPORT" ];
+    then
+        export HIGHPORT=2048
+    else
+        echo "==> HIGHPORT with ENV"
+    fi
+    if [ -z "$LOWPORT" ];
+    then
+        export LOWPORT=1024
+    else
+        echo "==> LOWPORT with ENV"
+    fi
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD"
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_schedd.template > /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
+
+    idmap=`echo $id | sed 's|/|\\\/|g'`
+    idmap="GSI \"^"`echo $idmap | sed 's|=|\\=|g'`"$\"    condor"
+
+    echo $idmap >> /home/uwdir/condormapfile
+
+cat >> /home/uwdir/condormapfile << EOF
+GSI (.*) GSS_ASSIST_GRIDMAP
+GSI (.*) anonymous
+EOF
+
     echo "==> Public schedd host"
     dodas_cache zookeeper SCHEDD_HOST "$NETWORK_INTERFACE"
     echo ""
     echo "==> Start condor"
     condor_master
-    echo "==> Start sshd on port $CONDOR_SCHEDD_SSH_PORT"
-    exec /usr/sbin/sshd -E /var/log/sshd.log -g 30 -p $CONDOR_SCHEDD_SSH_PORT -D
+    echo "==> Start the webUI on port 48080"
+    cd /opt/dodas/htc_config/webapp
+    exec python form.py 
 elif [ "$1" == "flock" ];
 then
     echo "==> Compile configuration file for flock cluster node with env vars"
@@ -99,7 +188,9 @@ then
     # export NETWORK_INTERFACE=$(hostname -i)
     # export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD, COLLECTOR, NEGOTIATOR"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master
     echo "==> Start sshd on port 32042"
@@ -107,7 +198,10 @@ then
 elif [ "$1" == "all" ];
 then
     echo "==> Compile configuration file for sheduler node with env vars"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
+
     echo "==> Start condor"
     condor_master -f
     echo "==> Start sshd on port $CONDOR_SCHEDD_SSH_PORT"
