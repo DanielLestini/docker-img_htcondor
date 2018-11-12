@@ -37,13 +37,13 @@ then
     fi
     if [ -z "$HIGHPORT" ];
     then
-        export $HIGHPORT=1084
+        export HIGHPORT=1084
     else
         echo "==> HIGHPORT with ENV"
     fi
     if [ -z "$LOWPORT" ];
     then
-        export $LOWPORT=1024
+        export LOWPORT=1024
     else
         echo "==> LOWPORT with ENV"
     fi
@@ -105,13 +105,13 @@ then
     fi
     if [ -z "$HIGHPORT" ];
     then
-        export $HIGHPORT=2048
+        export HIGHPORT=2048
     else
         echo "==> HIGHPORT with ENV"
     fi
     if [ -z "$LOWPORT" ];
     then
-        export $LOWPORT=1024
+        export LOWPORT=1024
     else
         echo "==> LOWPORT with ENV"
     fi
