@@ -29,7 +29,25 @@ then
         echo "==> CONDOR_HOST with ENV"
     fi
     echo "==> Compile configuration file for master node with env vars"
-    export NETWORK_INTERFACE=$(hostname -i)
+    if [ -z "$NETWORK_INTERFACE" ];
+    then
+        export NETWORK_INTERFACE=$(hostname -i)
+    else
+        echo "==> NETWORK_INTERFACE with ENV"
+    fi
+    if [ -z "$HIGHPORT" ];
+    then
+        export $HIGHPORT=1084
+    else
+        echo "==> HIGHPORT with ENV"
+    fi
+    if [ -z "$LOWPORT" ];
+    then
+        export $LOWPORT=1024
+    else
+        echo "==> LOWPORT with ENV"
+    fi
+
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     export CONDOR_DAEMON_LIST="COLLECTOR, MASTER, NEGOTIATOR"
     export FLOCK_FROM="FLOCK_FROM = 192.168.0.*"
@@ -79,7 +97,24 @@ then
         echo "==> CONDOR_HOST with ENV"
     fi
     echo "==> Compile configuration file for sheduler node with env vars"
-    export NETWORK_INTERFACE=$(hostname -i)
+    if [ -z "$NETWORK_INTERFACE" ];
+    then
+        export NETWORK_INTERFACE=$(hostname -i)
+    else
+        echo "==> NETWORK_INTERFACE with ENV"
+    fi
+    if [ -z "$HIGHPORT" ];
+    then
+        export $HIGHPORT=2048
+    else
+        echo "==> HIGHPORT with ENV"
+    fi
+    if [ -z "$LOWPORT" ];
+    then
+        export $LOWPORT=1024
+    else
+        echo "==> LOWPORT with ENV"
+    fi
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD"
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
