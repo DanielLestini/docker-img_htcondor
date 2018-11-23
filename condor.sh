@@ -14,12 +14,14 @@ FLOCK_NEGOTIATOR_HOSTS = \$\(FLOCK_TO\)
 EOF
 `
 
-yum -y install ca-policy-egi-core
-yum -y install ca-policy-lcg
-/usr/sbin/fetch-crl -q
+#yum -y install ca-policy-egi-core
+#yum -y install ca-policy-lcg
+#/usr/sbin/fetch-crl -q
 
-wget -O /etc/yum.repos.d/ca_CMS-TTS-CA.repo https://ci.cloud.cnaf.infn.it/job/cnaf-mw-devel-jobs/job/ca_CMS-TTS-CA/job/master/lastSuccessfulBuild/artifact/ca_CMS-TTS-CA.repo
-yum -y install ca_CMS-TTS-CA
+wget -O /etc/yum.repos.d/ca_CMS-TTS-CA.repo https://ci.cloud.cnaf.infn.it/view/dodas/job/ca_DODAS-TTS/job/master/lastSuccessfulBuild/artifact/ca_DODAS-TTS.repo
+yum -y install ca_DODAS-TTS
+
+/usr/sbin/fetch-crl -q
 
 resp=0
 until [  $resp -eq 200 ]; do
@@ -79,7 +81,8 @@ then
     export FLOCK_FROM="FLOCK_FROM = 192.168.0.*"
     export HOST_ALLOW_FLOCK="$CLUSTER_ALLOW_FLOCK"
     j2 /opt/dodas/htc_config/condor_config_master.template > /etc/condor/condor_config
-    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
 elif [ "$1" == "wn" ];
@@ -106,7 +109,8 @@ then
     export CONDOR_DAEMON_LIST="MASTER, STARTD"
     export CCB_ADDRESS_STRING="CCB_ADDRESS = $CCB_ADDRESS"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
-    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
     echo "==> Start service"
@@ -154,7 +158,8 @@ then
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD"
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     j2 /opt/dodas/htc_config/condor_config_schedd.template > /etc/condor/condor_config
-    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
     echo "==> Public schedd host"
     dodas_cache zookeeper SCHEDD_HOST "$NETWORK_INTERFACE"
     echo ""
@@ -172,7 +177,8 @@ then
     # export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD, COLLECTOR, NEGOTIATOR"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
-    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master
     echo "==> Start sshd on port 32042"
@@ -181,7 +187,8 @@ elif [ "$1" == "all" ];
 then
     echo "==> Compile configuration file for sheduler node with env vars"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
-    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
+    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
     echo "==> Start sshd on port $CONDOR_SCHEDD_SSH_PORT"
