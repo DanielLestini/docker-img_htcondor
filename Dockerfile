@@ -1,4 +1,4 @@
-FROM dodasts/centos:7-grid
+FROM dodasts/centos:7-grid-tini-sshd
 
 WORKDIR /etc/yum.repos.d
 
