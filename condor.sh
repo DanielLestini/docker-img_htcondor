@@ -160,6 +160,12 @@ then
     j2 /opt/dodas/htc_config/condor_config_schedd.template > /etc/condor/condor_config
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
     sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
+
+    idmap=`echo $id | sed 's|/|\\\/|g'`
+    idmap="GSI \"^"`echo $idmap | sed 's|=|\\=|g'`"$\"    condor"
+
+    echo $idmap >> /etc/condor/condormapfile
+
     echo "==> Public schedd host"
     dodas_cache zookeeper SCHEDD_HOST "$NETWORK_INTERFACE"
     echo ""
@@ -189,6 +195,7 @@ then
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
     sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
+
     echo "==> Start condor"
     condor_master -f
     echo "==> Start sshd on port $CONDOR_SCHEDD_SSH_PORT"
