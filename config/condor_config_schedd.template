@@ -123,7 +123,7 @@ CERTIFICATE_MAPFILE = /etc/condor/condormapfile
 GSI_DAEMON_DIRECTORY = /etc/grid-security
 
 GSI_DAEMON_NAME = DUMMY
-GSI_DAEMON_CERT = /etc/grid-security/hostcert.pem
+GSI_DAEMON_CERT = /root/gwms_proxy
 
 # Condor connection broker
 # Only worker node can have CCB_ADDRESS

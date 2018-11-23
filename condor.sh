@@ -34,6 +34,7 @@ chmod 600 /root/gwms_proxy
 export X509_USER_PROXY=/root/gwms_proxy
 export X509_CERT_DIR=/etc/grid-security/certificates
 
+
 cat > /etc/condor/condormapfile << EOF
 GSI (.*) GSS_ASSIST_GRIDMAP
 GSI (.*) anonymous
@@ -78,6 +79,7 @@ then
     export FLOCK_FROM="FLOCK_FROM = 192.168.0.*"
     export HOST_ALLOW_FLOCK="$CLUSTER_ALLOW_FLOCK"
     j2 /opt/dodas/htc_config/condor_config_master.template > /etc/condor/condor_config
+    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
 elif [ "$1" == "wn" ];
@@ -104,6 +106,7 @@ then
     export CONDOR_DAEMON_LIST="MASTER, STARTD"
     export CCB_ADDRESS_STRING="CCB_ADDRESS = $CCB_ADDRESS"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
+    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
     echo "==> Start service"
@@ -151,6 +154,7 @@ then
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD"
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     j2 /opt/dodas/htc_config/condor_config_schedd.template > /etc/condor/condor_config
+    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
     echo "==> Public schedd host"
     dodas_cache zookeeper SCHEDD_HOST "$NETWORK_INTERFACE"
     echo ""
@@ -168,6 +172,7 @@ then
     # export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD, COLLECTOR, NEGOTIATOR"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
+    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
     echo "==> Start condor"
     condor_master
     echo "==> Start sshd on port 32042"
@@ -176,6 +181,7 @@ elif [ "$1" == "all" ];
 then
     echo "==> Compile configuration file for sheduler node with env vars"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
+    sed -i -e "s/DUMMY/`voms-proxy-info --file /root/gwms_proxy --identity`/g" /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
     echo "==> Start sshd on port $CONDOR_SCHEDD_SSH_PORT"
