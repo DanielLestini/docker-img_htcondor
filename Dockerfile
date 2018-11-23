@@ -1,4 +1,4 @@
-FROM dodasts/centos:7-grid-tini-sshd
+FROM dodasts/centos:7-grid
 
 WORKDIR /etc/yum.repos.d
 
@@ -19,7 +19,7 @@ RUN useradd -ms /bin/bash condor \
         python-pip \
     && yum clean all \
     && pip install --upgrade pip setuptools \
-    && pip install j2cli paramiko psutil kazoo requests \
+    && pip install j2cli paramiko psutil kazoo requests flask Flask-WTF htcondor \
     && systemctl disable condor
 
 # Root home
@@ -64,7 +64,10 @@ COPY ./health_checks/check_ssh_server.py /opt/dodas/health_checks/
 COPY ./health_checks/check_condor_master_ip.sh /opt/dodas/health_checks/
 COPY ./health_checks/check_condor_schedd_tunnel.sh /opt/dodas/health_checks/
 COPY cache.py /opt/dodas/
-COPY ./config/condor_config.template /opt/dodas/htc_config/
+COPY ./config/condor_config_schedd.template /opt/dodas/htc_config/
+COPY ./config/condor_config_master.template /opt/dodas/htc_config/
+COPY ./config/condor_config_wn.template /opt/dodas/htc_config/
+COPY webapp /opt/dodas/htc_config/
 
 RUN ln -s /opt/dodas/condor.sh /usr/local/sbin/dodas_condor \
     && ln -s /opt/dodas/health_checks/check_condor_processes.py /usr/local/sbin/dodas_check_condor_processes \

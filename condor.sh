@@ -14,6 +14,31 @@ FLOCK_NEGOTIATOR_HOSTS = \$\(FLOCK_TO\)
 EOF
 `
 
+yum -y install ca-policy-egi-core
+yum -y install ca-policy-lcg
+/usr/sbin/fetch-crl -q
+
+wget -O /etc/yum.repos.d/ca_CMS-TTS-CA.repo https://ci.cloud.cnaf.infn.it/job/cnaf-mw-devel-jobs/job/ca_CMS-TTS-CA/job/master/lastSuccessfulBuild/artifact/ca_CMS-TTS-CA.repo
+yum -y install ca_CMS-TTS-CA
+
+resp=0
+until [  $resp -eq 200 ]; do
+    resp=$(curl -s \
+        -w%{http_code} \
+        $PROXY_CACHE/cgi-bin/get_proxy -o /root/gwms_proxy)
+done
+#############
+
+chmod 600 /root/gwms_proxy
+
+export X509_USER_PROXY=/root/gwms_proxy
+export X509_CERT_DIR=/etc/grid-security/certificates
+
+cat > /etc/condor/condormapfile << EOF
+GSI (.*) GSS_ASSIST_GRIDMAP
+GSI (.*) anonymous
+EOF
+
 if [ "$1" == "master" ];
 then
     echo "==> Check CONDOR_HOST"
@@ -52,7 +77,7 @@ then
     export CONDOR_DAEMON_LIST="COLLECTOR, MASTER, NEGOTIATOR"
     export FLOCK_FROM="FLOCK_FROM = 192.168.0.*"
     export HOST_ALLOW_FLOCK="$CLUSTER_ALLOW_FLOCK"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_master.template > /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
 elif [ "$1" == "wn" ];
@@ -78,7 +103,7 @@ then
     echo "==> Compile configuration file for worker node with env vars"
     export CONDOR_DAEMON_LIST="MASTER, STARTD"
     export CCB_ADDRESS_STRING="CCB_ADDRESS = $CCB_ADDRESS"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
     echo "==> Start service"
@@ -125,7 +150,7 @@ then
     fi
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD"
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_schedd.template > /etc/condor/condor_config
     echo "==> Public schedd host"
     dodas_cache zookeeper SCHEDD_HOST "$NETWORK_INTERFACE"
     echo ""
@@ -142,7 +167,7 @@ then
     # export NETWORK_INTERFACE=$(hostname -i)
     # export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD, COLLECTOR, NEGOTIATOR"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
     echo "==> Start condor"
     condor_master
     echo "==> Start sshd on port 32042"
@@ -150,7 +175,7 @@ then
 elif [ "$1" == "all" ];
 then
     echo "==> Compile configuration file for sheduler node with env vars"
-    j2 /opt/dodas/htc_config/condor_config.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
     echo "==> Start sshd on port $CONDOR_SCHEDD_SSH_PORT"

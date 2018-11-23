@@ -1,0 +1,12 @@
+{% from "_formhelpers.html" import render_field %}
+<form method=post>
+  <dl>
+    {{ render_field(form.username) }}
+    {{ render_field(form.token) }}
+    {{ render_field(form.client_id) }}
+    {{ render_field(form.client_secret) }}
+    {{ render_field(form.iam) }}
+    {{ render_field(form.audience) }}
+  </dl>
+  <p><input type=submit value=Register>
+</form>
