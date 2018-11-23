@@ -82,7 +82,7 @@ then
     export HOST_ALLOW_FLOCK="$CLUSTER_ALLOW_FLOCK"
     j2 /opt/dodas/htc_config/condor_config_master.template > /etc/condor/condor_config
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
 elif [ "$1" == "wn" ];
@@ -110,7 +110,7 @@ then
     export CCB_ADDRESS_STRING="CCB_ADDRESS = $CCB_ADDRESS"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
     echo "==> Start service"
@@ -159,7 +159,7 @@ then
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     j2 /opt/dodas/htc_config/condor_config_schedd.template > /etc/condor/condor_config
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Public schedd host"
     dodas_cache zookeeper SCHEDD_HOST "$NETWORK_INTERFACE"
     echo ""
@@ -178,7 +178,7 @@ then
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD, COLLECTOR, NEGOTIATOR"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master
     echo "==> Start sshd on port 32042"
@@ -188,7 +188,7 @@ then
     echo "==> Compile configuration file for sheduler node with env vars"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'/g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
     echo "==> Start sshd on port $CONDOR_SCHEDD_SSH_PORT"
