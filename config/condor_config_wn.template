@@ -123,7 +123,7 @@ CERTIFICATE_MAPFILE = /etc/condor/condormapfile
 GSI_DAEMON_DIRECTORY = /etc/grid-security
 
 GSI_DAEMON_NAME = DUMMY 
-GSI_DAEMON_CERT = /root/gwms_proxy
+GSI_DAEMON_PROXY = /root/gwms_proxy
 
 
 # Condor connection broker
