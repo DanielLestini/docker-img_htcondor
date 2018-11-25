@@ -68,6 +68,7 @@ COPY ./config/condor_config_schedd.template /opt/dodas/htc_config/
 COPY ./config/condor_config_master.template /opt/dodas/htc_config/
 COPY ./config/condor_config_wn.template /opt/dodas/htc_config/
 COPY webapp /opt/dodas/htc_config/webapp
+RUN mkdir -p /var/log/form/
 
 RUN ln -s /opt/dodas/condor.sh /usr/local/sbin/dodas_condor \
     && ln -s /opt/dodas/health_checks/check_condor_processes.py /usr/local/sbin/dodas_check_condor_processes \
