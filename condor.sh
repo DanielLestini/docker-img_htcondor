@@ -164,15 +164,21 @@ then
     idmap=`echo $id | sed 's|/|\\\/|g'`
     idmap="GSI \"^"`echo $idmap | sed 's|=|\\=|g'`"$\"    condor"
 
-    echo $idmap >> /etc/condor/condormapfile
+    echo $idmap >> /home/uwdir/condormapfile
+
+cat >> /home/uwdir/condormapfile << EOF
+GSI (.*) GSS_ASSIST_GRIDMAP
+GSI (.*) anonymous
+EOF
 
     echo "==> Public schedd host"
     dodas_cache zookeeper SCHEDD_HOST "$NETWORK_INTERFACE"
     echo ""
     echo "==> Start condor"
     condor_master
-    echo "==> Start sshd on port $CONDOR_SCHEDD_SSH_PORT"
-    exec /usr/sbin/sshd -E /var/log/sshd.log -g 30 -p $CONDOR_SCHEDD_SSH_PORT -D
+    echo "==> Start the webUI on port 48080"
+    cd webapp
+    exec python form.py 
 elif [ "$1" == "flock" ];
 then
     echo "==> Compile configuration file for flock cluster node with env vars"
