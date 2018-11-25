@@ -177,7 +177,7 @@ EOF
     echo "==> Start condor"
     condor_master
     echo "==> Start the webUI on port 48080"
-    cd webapp
+    cd /opt/dodas/htc_config/webapp
     exec python form.py 
 elif [ "$1" == "flock" ];
 then
