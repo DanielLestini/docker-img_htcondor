@@ -246,4 +246,6 @@ if __name__ == '__main__':
                         format='[%(asctime)s][%(levelname)s][%(filename)s@%(lineno)d]->[%(message)s]',
                         level=logging.DEBUG)
     APP.logger.setLevel(logging.DEBUG)
-    APP.run(host="0.0.0.0", port=48080)
+    # TODO: if env PORT, otherwise 8080
+    port = os.getenv('WEBUI_PORT', default='48080')
+    APP.run(host="0.0.0.0", port=int(port))
