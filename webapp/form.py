@@ -233,7 +233,8 @@ def register():
             print DN.replace("/","\/").replace("=","\=")
 
         with open('/home/uwdir/condormapfile', 'a') as condor_file:
-            condor_file.write("GSI \"^" + DN.replace("/","\/").replace("=","\=") + "$\"    " + form.username.data)
+            entry = "GSI \"^" + DN.replace("/", "\/").replace("=", "\=") + "$\"    " + form.username.data
+            condor_file.write(entry.rstrip())
 
         # condor_reconfig
 
