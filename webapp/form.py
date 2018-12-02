@@ -213,7 +213,9 @@ def register():
             logging.error("grid-proxy-init failed stdout %s", proxy_out)
             logging.error("grid-proxy-init failed stderr %s", proxy_err)
 
-        command = "voms-proxy-info --file {} --subject ".format(proxy_file)
+        # TODO: usedadd
+
+        command = "voms-proxy-info --file {} --identity ".format(proxy_file)
 
         get_DN = subprocess.Popen(
             command,
@@ -236,7 +238,41 @@ def register():
             entry = "GSI \"^" + DN.replace("/", "\/").replace("=", "\=").rstrip() + "$\"    " + form.username.data
             condor_file.write(entry)
 
+        command = "adduser {}".format(form.username.data)
+        
+        create_user = subprocess.Popen(
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True
+        )
+
+        _, err = create_user.communicate()
+
+        if err:
+            logging.error("failed to add user %s: %s", form.username.data, err)
+        else:
+            logging.info("Created user %s", form.username.data)
+
         # condor_reconfig
+
+        command = "condor_reconfig"
+        
+        condor_reconfig = subprocess.Popen(
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True
+        )
+
+        _, err = condor_reconfig.communicate()
+
+        if err:
+            logging.error("failed to reconfig condor: %s", err)
+        else:
+            logging.info("Condor schedd reconfigured")        
 
         return render_template('success.html')
     return render_template('register.html', form=form)
