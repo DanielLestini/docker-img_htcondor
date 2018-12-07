@@ -235,8 +235,11 @@ def register():
             print DN.replace("/","\/").replace("=","\=")
 
         with open('/home/uwdir/condormapfile', 'a') as condor_file:
-            entry = "GSI \"^" + DN.replace("/", "\/").replace("=", "\=").rstrip() + "$\"    " + form.username.data
-            condor_file.write(entry)
+            with open('/home/uwdir/temp_file', 'w') as temp_file:
+                entry = "GSI \"^" + DN.replace("/", "\/").replace("=", "\=").rstrip() + "$\"    " + form.username.data
+                temp_file.write(entry)
+                temp_file.write(condor_file.read())
+        os.rename('/home/uwdir/temp_file', '/home/uwdir/condormapfile')
 
         command = "adduser {}".format(form.username.data)
         
