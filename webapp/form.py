@@ -234,7 +234,7 @@ def register():
         else:
             print DN.replace("/","\/").replace("=","\=")
 
-        with open('/home/uwdir/condormapfile', 'a') as condor_file:
+        with open('/home/uwdir/condormapfile', 'r') as condor_file:
             with open('/home/uwdir/temp_file', 'w') as temp_file:
                 entry = "GSI \"^" + DN.replace("/", "\/").replace("=", "\=").rstrip() + "$\"    " + form.username.data
                 temp_file.write(entry)
