@@ -117,6 +117,8 @@ then
 elif [ "$1" == "schedd" ];
 then
     echo "==> Prepare schedd"
+    chown condor:condor /var/lib/condor/spool
+    chmod go+rw /var/lib/condor/spool 
     adduser schedd
     passwd -d schedd
     ssh-keygen -q -t rsa -N '' -f /home/schedd/.ssh/id_rsa
