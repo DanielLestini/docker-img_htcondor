@@ -1,5 +1,5 @@
 NS ?= dodasts
-VERSION ?= latest
+VERSION ?= travis 
 
 IMAGE_NAME ?= htocondor
 CONTAINER_NAME ?= htcondor
@@ -11,7 +11,7 @@ CONTAINER_INSTANCE ?= default
 build: Dockerfile
 	docker build -t $(NS)/$(IMAGE_NAME):$(VERSION) -f Dockerfile .
 
-push:
+push: login
 	docker push $(NS)/$(IMAGE_NAME):$(VERSION)
 
 shell:
@@ -29,7 +29,10 @@ stop:
 rm:
 	docker rm $(CONTAINER_NAME)-$(CONTAINER_INSTANCE)
 
-release: build
+release: login build
 	make push -e VERSION=$(VERSION)
 
-default: build
+login:
+	docker login
+
+default: build 
