@@ -71,8 +71,8 @@ def create_dn_from_userid(userid):
 def register():
 
         iam_endpoint = os.getenv('IAM_ENDPOINT', default='https://dodas-iam.cloud.cnaf.infn.it/')
-        client_id = os.getenv('CLIENT_ID', default='c53b6a68-c9d5-4320-9f18-6375909b89aa')
-        client_secret = os.getenv('CLIENT_SECRET', default='AP6d0PQk5Tc1mDFEFMBcGTrqBMsRN3rcqT-FBeFh_ZyQ2sbqSdu5uy16STQAMykkPNHDZyKia3MAzS9rlUNbc7g')
+        client_id = os.getenv('CLIENT_ID', default='DUMMY')
+        client_secret = os.getenv('CLIENT_SECRET', default='DUMMY')
         iam_group = os.getenv('IAM_GROUP', default='AMS')
 
         # TO DO: limit to one group!
