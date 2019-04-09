@@ -61,19 +61,24 @@ def get_user_list(endpoint, id, secret, group):
         if grp['displayName'] == group:
             userTuples = [(x['display'], x['value']) for x in grp['members']]
             break
+        elif group == "ALL":
+            for usr in grp['members']:
+                userTuples.append((usr['display'], usr['value']))
 
     return userTuples
+
 
 def create_dn_from_userid(userid):
     userDN = "\/C\=IT\/O\=CLOUD@CNAF\/CN\={0}@dodas-iam".format(userid)
     return userDN
+
 
 def register():
 
         iam_endpoint = os.getenv('IAM_ENDPOINT', default='https://dodas-iam.cloud.cnaf.infn.it/')
         client_id = os.getenv('CLIENT_ID', default='DUMMY')
         client_secret = os.getenv('CLIENT_SECRET', default='DUMMY')
-        iam_group = os.getenv('IAM_GROUP', default='AMS')
+        iam_group = os.getenv('IAM_GROUP', default='ALL')
 
         # TO DO: limit to one group!
         user_id_map = get_user_list(iam_endpoint, client_id, client_secret, iam_group)
