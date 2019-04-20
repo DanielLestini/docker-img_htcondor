@@ -27,7 +27,7 @@ resp=0
 until [  $resp -eq 200 ]; do
     resp=$(curl -s \
         -w%{http_code} \
-        $PROXY_CACHE/cgi-bin/get_proxy -o /root/gwms_proxy)
+        $PROXY_CACHE/get_proxy -o /root/gwms_proxy)
 done
 #############
 
@@ -35,6 +35,16 @@ chmod 600 /root/gwms_proxy
 
 export X509_USER_PROXY=/root/gwms_proxy
 export X509_CERT_DIR=/etc/grid-security/certificates
+
+
+cat > /root/renewproxy.sh << EOF
+curl -s $PROXY_CACHE/get_proxy -o /root/gwms_proxy
+EOF
+chmod +x /root/renewproxy.sh
+
+(crontab -l 2>/dev/null; echo "* * * * * /root/renewproxy.sh") | crontab 
+
+crond 2>/dev/null
 
 
 cat > /etc/condor/condormapfile << EOF
