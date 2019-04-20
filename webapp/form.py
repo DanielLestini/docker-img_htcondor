@@ -236,7 +236,7 @@ def register():
 
         with open('/home/uwdir/condormapfile', 'r') as condor_file:
             with open('/home/uwdir/temp_file', 'w') as temp_file:
-                entry = "GSI \"^" + DN.replace("/", "\/").replace("=", "\=").rstrip() + "$\"    " + form.username.data
+                entry = "GSI \"^" + DN.replace("/", "\/").replace("=", "\=").rstrip() + "$\"   " + form.username.data + " \n"
                 temp_file.write(entry)
                 temp_file.write(condor_file.read())
         os.rename('/home/uwdir/temp_file', '/home/uwdir/condormapfile')
