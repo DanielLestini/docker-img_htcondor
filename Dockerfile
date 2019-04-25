@@ -3,7 +3,6 @@ FROM dodasts/centos:7-grid-tini-sshd
 WORKDIR /etc/yum.repos.d
 
 RUN useradd -ms /bin/bash condor \
-    && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-development-rhel7.repo \
     && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-stable-rhel7.repo \
     && wget http://research.cs.wisc.edu/htcondor/yum/RPM-GPG-KEY-HTCondor \
     && rpm --import RPM-GPG-KEY-HTCondor \
