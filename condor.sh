@@ -38,11 +38,19 @@ export X509_CERT_DIR=/etc/grid-security/certificates
 
 
 cat > /root/renewproxy.sh << EOF
-curl -s $PROXY_CACHE/get_proxy -o /root/gwms_proxy
+#!/bin/bash
+resp=0
+until [  $resp -eq 200 ]; do
+    resp=$(curl -s \
+        -w%{http_code} \
+        $PROXY_CACHE/get_proxy -o /root/gwms_proxy_tmp)
+done
+cp /root/gwms_proxy_tmp /root/gwms_proxy
 EOF
+
 chmod +x /root/renewproxy.sh
 
-(crontab -l 2>/dev/null; echo "* * * * * /root/renewproxy.sh") | crontab 
+(crontab -l 2>/dev/null; echo "* */10 * * * /root/renewproxy.sh") | crontab 
 
 crond 2>/dev/null
 
