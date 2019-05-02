@@ -14,9 +14,8 @@ FLOCK_NEGOTIATOR_HOSTS = \$\(FLOCK_TO\)
 EOF
 `
 
-#yum -y install ca-policy-egi-core
-#yum -y install ca-policy-lcg
-#/usr/sbin/fetch-crl -q
+yum -y install ca-policy-egi-core
+yum -y install ca-policy-lcg
 
 wget -O /etc/yum.repos.d/ca_CMS-TTS-CA.repo https://ci.cloud.cnaf.infn.it/view/dodas/job/ca_DODAS-TTS/job/master/lastSuccessfulBuild/artifact/ca_DODAS-TTS.repo
 yum -y install ca_DODAS-TTS
