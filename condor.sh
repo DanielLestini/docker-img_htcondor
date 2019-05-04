@@ -36,13 +36,14 @@ export X509_USER_PROXY=/root/gwms_proxy
 export X509_CERT_DIR=/etc/grid-security/certificates
 
 
-cat > /root/renewproxy.sh << EOF
+#!/bin/bash
+cat << 'EOF' >> /root/renewproxy.sh
 #!/bin/bash
 resp=0
 until [  $resp -eq 200 ]; do
-    resp=$(curl -s \
-        -w%{http_code} \
-        $PROXY_CACHE/get_proxy -o /root/gwms_proxy_tmp)
+        resp=$(curl -s \
+                -w%{http_code} \
+                $PROXY_CACHE/get_proxy -o /root/gwms_proxy_tmp)
 done
 cp /root/gwms_proxy_tmp /root/gwms_proxy
 EOF
